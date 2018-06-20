@@ -1,0 +1,10 @@
+<launch>
+  <group name="wg">
+    <include file="$(find safety_node)/path/filename.xml" /> #safety
+    <include file="$(find ar_tag_finder)/path/filename.xml" /> #ar tag alvar
+    <include file="$(find right_wall_follower)/path/filename.xml" /> #right wall follower
+    <include file="$(find left_wall_followe)/path/filename.xml" /> #left wall follower
+    <include file="$(find line_follower)/path/filename.xml" /> #line follower
+    <include file="$(find pkg-name)/path/filename.xml" />
+  </group>
+</launch>
