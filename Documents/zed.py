@@ -26,24 +26,23 @@ class YellowNode:
     self.control = 0
     self.dt = 0.2
     self.last_integral = 0
-    self.desiredd = 1	
-
+    self.desiredd =240
   def callback(self,msg):
     self.msg=msg
     frame = self.bridge.imgmsg_to_cv2(msg)
     
     
     self.hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
-    lower_yellow = np.array([20,100,100])
-    upper_yellow = np.array([50,255,255])
+    lower_yellow = np.array([20,200,200])
+    upper_yellow = np.array([40,255,255])
     self.mask=cv2.inRange(self.hsv,lower_yellow,upper_yellow)
     rows=self.mask.shape[0]
     cols=self.mask.shape[1]
     area1=np.array([[[cols,0], [cols/2,0], [cols,rows],[cols,rows-1]]],dtype=np.int32)
     area2=np.array([[[cols/2,0], [0,0], [0,rows],[1,rows]]],dtype=np.int32)
-    cv2.fillPoly(self.mask,area1,255)
-    cv2.fillPoly(self.mask,area2,255)
-    #cv2.imshow('mask',self.mask)
+    cv2.fillPoly(self.mask,area1,0)
+    cv2.fillPoly(self.mask,area2,0)
+    cv2.imshow('mask',self.mask)
      
     contours,hierachy=cv2.findContours(self.mask.copy(), 1, cv2.CHAIN_APPROX_NONE)    
 
@@ -55,7 +54,8 @@ class YellowNode:
       #cv2.line(self.mask,(cx,0),(cx,720),(255,0,0),1)
       #cv2.line(self.mask,(0,cy),(1280,cy),(255,0,0),1)
       cv2.drawContours(self.mask, contours, -1, (0,255,0), 1)
-      
+      print cx-self.desiredd
+      self.PID(cx-self.desiredd)
     #if cx >= 120:
         #print "Turn Left!"
       #if cx < 120 and cx > 50:
@@ -64,9 +64,9 @@ class YellowNode:
         #print "Turn Right"
     #else:
       #print "I don't see the line"
-    print cx
+    #print self.desiredd-cx
 
-    #cv2.waitKey(0)
+    cv2.waitKey(0)
     #cv2.bitwise_and(mask,x, mask=mask)
     #threshold=[]
     #width=len(self.mask[0])
@@ -75,8 +75,8 @@ class YellowNode:
     #self.region=cv2.bitwise_and(mask,y)
     
     #print self.msg.header
-    self.PID=(self.desiredd - cx)
- 
+    
+
   def PID(self, current_error, reset_prev=False):
     integral_gain = self.last_integral
     proportional_gain = self.Kp*current_error
@@ -102,4 +102,4 @@ class YellowNode:
 if __name__ == "__main__":
     rospy.init_node("Yellow_Node", anonymous = True)
     node =YellowNode()
-    rospy.spin()
+rospy.spin()
