@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+import rospy
+import time
+import numpy as np
+from ackermann_msgs.msg import AckermannDriveStamped
+from sensor_msgs.msg import LaserScan
+
+class Follow_Wall():
+
+    def __init__(self):
+        # subscribe to Ackermann
+        rospy.Subscriber("ackermann_cmd_mux/output", AckermannDriveStamped,self.ackermann_cmd_input_callback)
+        rospy.Subscriber("/scan", LaserScan, self.laser_callback)
+ 
+        # publish to Ackermann
+        self.cmd_pub = rospy.Publisher('/vesc/ackermann_cmd_mux/input/navigation', AckermannDriveStamped, queue_size = 10)
+
+        #Set the range of values we care about (From degrees to "shots") for the right wall
+        self.maxRange = int(round(65) / 0.25)
+        self.minRange = int(round(25) / 0.25)
+
+        #Same process for the north
+
+
+        #left indicates which wall the car is supposed to follow
+        self.left = 1
+
+        self.kp = 1.65
+        self.kd = 0.165
+        self.ki = 0.0165
+
+        '''
+        self.kp = 1.5
+        self.kd = 0.8
+        self.ki = 0.02
+
+        chidas:
+        1.2
+        0.4
+        0.02
+        '''
+
+        self.average = 0
+        self.idealDis = 0.5
+        self.error = 0
+
+        self.prop = 0
+        self.deriv = 0
+        self.integ = 0
+        self.prev_error = 0
+        self.output = 0
+
+        self.prev_time = 0
+        self.current_time = 0
+
+    def laser_callback(self,msg):
+
+        ranges = msg.ranges
+            
+        #get average
+        if (self.left == 1):
+            self.average = np.mean(ranges[(self.minRange + 810) : (self.maxRange + 810)])
+            #self.average = np.mean(ranges[self.minRange : self.maxRange])
+         
+        else:
+            # 810 is the euqivalent of 180 degrees in "shots" to get the average of the left side
+            self.average = np.mean(ranges[(self.minRange) : (self.maxRange)])
+        
+        print("Distance = {0:.5f}".format(self.average))
+        self.error = self.average - self.idealDis
+        self.PID(self.error)
+
+
+    def PID(self, error):
+        self.current_time = time.time()
+
+        #P
+        self.prop = self.kp * error
+
+        #I
+        self.integ = self.ki * ((error + self.prev_error) * (self.current_time - self.prev_time))
+
+        #D
+        self.deriv = self.kd * ((error - self.prev_error) / (self.current_time - self.prev_time))
+
+        self.prev_errror = error
+        self.prev_time = self.current_time
+
+        self.output = self.prop + self.integ + self.deriv
+
+        print("P = {} I = {} D = {}, PID = {}".format(round(self.prop, 4), round(self.integ, 4), round(self.deriv, 4), round(self.output, 4)))
+
+        self.ackermann_cmd_input_callback(AckermannDriveStamped())
+
+    def ackermann_cmd_input_callback(self, msg):
+        msg.drive.speed = 1.5
+        msg.drive.steering_angle = self.output
+        msg.drive.steering_angle_velocity = 1
+        self.cmd_pub.publish(msg)
+        
+if __name__ == "__main__":
+    rospy.init_node("Follow_Wall")
+    node = Follow_Wall()
+rospy.spin()
