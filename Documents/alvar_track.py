@@ -10,9 +10,8 @@ class ar_switch():
         #rospy.Subscriber("/camera/rgb/image_rect_color", Image, self.callback,  queue_size = 1)
 
     def callback(self,msg):
-        self.msg = AlvarMarkers()
-        if self.msg.markers.id != 1:
-            print ("AR tag" + self.msg.marker.id)   
+        if msg.header.frame_id != 1:
+            print ("AR tag" + msg.header.id)   
 
 if __name__ == "__main__":
     rospy.init_node("ar_switch", anonymous = True)
