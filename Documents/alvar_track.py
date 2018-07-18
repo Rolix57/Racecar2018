@@ -15,5 +15,5 @@ class ar_switch():
                               
 if __name__ == "__main__":
     rospy.init_node("ar_switch", anonymous = True)
-    node =ar_switch()
+    node = ar_switch()
     rospy.spin()
