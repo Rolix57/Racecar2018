@@ -11,7 +11,7 @@ class ar_switch():
 
     def callback(self,msg):
         if msg.header.frame_id != 1:
-            print ("AR tag" + msg.header.id)   
+            print ("AR tag" + msg.header.frame_id)   
 
 if __name__ == "__main__":
     rospy.init_node("ar_switch", anonymous = True)
