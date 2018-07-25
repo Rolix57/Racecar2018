@@ -26,7 +26,6 @@ top_right = [cols*0.6, rows*0.6]
 vertices = np.array([[bottom_left, top_left, top_right, bottom_right]], dtype = np.int32)
 
 while True:
-    ret,frame = cap.read()
     hsv = cv2.cvtColor(filter_region(frame, vertices) , cv2.COLOR_BGR2HSV)
 
     rmn = np.array([170,100,100])
@@ -35,23 +34,30 @@ while True:
 
     maskr = cv2.inRange(hsv, rmn, rmx)
 
-    ymn = np.array([20,100,100])
-    ymx = np.array([50,255,255])
+    gmn = np.array([34,50,50])
+    gmx = np.array([80,220,200])
     
 
-    masky = cv2.inRange(hsv, ymn, ymx)
+    maskg = cv2.inRange(hsv, gmn, gmx)
+
+    omn = np.array([10,130,220])
+    omx = np.array([25,255,255])
+    masko = cv2.inRange(hsv, omn, omx)
     '''
+    ret,frame = cap.read()
     if(masky):
         print("iT IS yellow")
     else:
         print("U dumass")'''
 
-    cv2.imshow('masky', masky)
+    cv2.imshow('maskg', maskg)
+    cv2.imshow('masko', masko)
     cv2.imshow('red', maskr)
 
     threshold = []
     counterred = 0
-    counteryellow = 0
+    countergreen = 0
+    counterorange = 0
     for i in range(479):
         if maskr[i][240] != 0:
             threshold.append(255)
@@ -60,16 +66,23 @@ while True:
             threshold.append(0)
     
     for i in range(479):
-        if masky[i][240] != 0:
+        if maskg[i][240] != 0:
             threshold.append(255)
-            counteryellow+= 1
+            countergreen+= 1
         else:
             threshold.append(0)
-    
-    if counteryellow >= 20:
-        print("sigue la amarilla")
-    elif counterred >= 20:
+    for i in range(479):
+        if masko[i][240] != 0:
+            threshold.append(255)
+            counterorange+= 1
+        else:
+            threshold.append(0)
+    if counterorange >= 15:
+        print("sigue la naranja")
+    elif counterred >= 15:
         print("sigue la roja")
+    elif countergreen >= 15:
+        print("sigue la verde")
     else:
         print("alto")
     
