@@ -16,8 +16,8 @@ class ar_switch():
 
     def callback(self,marker):
         if len(marker.marcookers) > 0:
-            if marker.markers[0].x != None:
-         	print marker.markers[0].x
+            if marker.markers[0].pose.x != None:
+         	print marker.markers[0].pose.x
 
 if __name__ == "__main__":
     rospy.init_node("ar_switch", anonymous = True)
