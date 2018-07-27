@@ -7,15 +7,6 @@ from ackermann_msgs.msg import AckermannDriveStamped
 from cv_bridge import CvBridge
 import time
 
-lower_color = np.array([10,150,230])
-upper_color = np.array([30,255,255])
-lower_green = np.array([34,50,50])
-upper_green = np.array([80,220,200])
-lower_red = np.array([230,85,75])
-upper_red = np.array([255,20,20])
-lower_black = np.array([195,200,205])
-upper_black = np.array([170,190,200])
-
 class YellowNode:
     def __init__( self ):
         rospy.Subscriber("/zed/rgb/image_rect_color",Image, self.callback, queue_size = 1)
@@ -61,7 +52,20 @@ class YellowNode:
         self.hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)   
         lower_yellow = np.array([10,130,220])
         upper_yellow = np.array([25,255,255])
-        self.mask=cv2.inRange(self.hsv,lower_yellow,upper_yellow)
+        lower_color = np.array([10,150,230])
+        upper_color = np.array([30,255,255])
+        lower_green = np.array([34,50,50])
+        upper_green = np.array([80,220,200])
+        lower_red = np.array([230,85,75])
+        upper_red = np.array([255,20,20])
+        lower_black = np.array([195,200,205])
+        upper_black = np.array([170,190,200])
+        self.yellow_mask=cv2.inRange(self.hsv,lower_yellow,upper_yellow)
+        self.green_mask=cv2.inRange(self.hsv,lower_green,upper_green)
+        self.red_mask=cv2.inRange(self.hsv,lower_red,upper_red)
+        self.black_mask = cv2.inRange(self.hsv,lower_black,upper_black)
+        self.merge = cv2.bitwise_or(self.yellow_mask,self.green_mask,self.red_mask,self.black_mask)
+        self.mask = cv2.bitwise_and(frame, frame, self.merge=self.merge)
         self.rows=self.mask.shape[0]
         self.cols=self.mask.shape[1]
         #area1=np.array([[[self.cols,0], [self.cols/2,0], [self.cols,self.rows],[self.cols,self.rows-1]]],dtype=np.int32)
@@ -112,8 +116,8 @@ class YellowNode:
         self.prev_time = self.current_time
 
         self.output = self.prop + self.integ + self.deriv
-	#if abs(self.output) > 0.3:
-		#self.output = 0.3
+       	#if abs(self.output) > 0.3:
+	    	#self.output = 0.3
         #if self.cx>640:
             #self.output*=-1
         #print self.output
@@ -121,28 +125,28 @@ class YellowNode:
         print("P = {} I = {} D = {}, PID = {}".format(round(self.prop, 4), round(self.integ, 4), round(self.deriv, 4), round(self.output, 4)))
 
         self.ackermann_cmd_input_callback(AckermannDriveStamped())
-	print("cx = {}		cy = {}".format(self.cx, self.cy))
-	print("cols = {}		rows = {}".format(self.cols, self.rows))
+	       #print("cx = {}		cy = {}".format(self.cx, self.cy))
+	       # print("cols = {}		rows = {}".format(self.cols, self.rows))
 
     def ackermann_cmd_input_callback(self, msg):
-        msg.drive.speed = 0.7
+        msg.drive.speed = 0.0
         msg.drive.steering_angle = self.output
         msg.drive.steering_angle_velocity = 1.42
         self.cmd_pub.publish(msg)
-   
+    """
     def changeline(self,msg):
-	self.msg=msg
-        frame = self.bridge.imgmsg_to_cv2(msg)
-        self.hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  
-	self.green=cv2.inRange(self.hsv,lower_green,upper_green)
-	contours,hierachy=cv2.findContours(self.green.copy(), 1, cv2.CHAIN_APPROX_NONE)
-	if len(contours) > 0:
-	c = max(contours, key=cv2.contourArea)
-	M = cv2.moments(c)
-	if cv.contourArea(M)>100:
-	lower_color[0], lower_color[1], lower_color[2] = lower_green[0], lower_green[1], lower_green[2]
-	upper_color[0], upper_color[1], upper_color[2] = upper_green[0], upper_green[1], upper_green[2]
-
+    	self.msg = msg
+      frame = self.bridge.imgmsg_to_cv2(msg)
+      self.hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  
+    	self.green=cv2.inRange(self.hsv,lower_green,upper_green)
+    	contours,hierachy=cv2.findContours(self.green.copy(), 1, cv2.CHAIN_APPROX_NONE)
+    	if len(contours) > 0:
+    	   c = max(contours, key=cv2.contourArea)
+    	   M = cv2.moments(c)
+    	if cv.contourArea(M)>100:
+    	   lower_color[0], lower_color[1], lower_color[2] = lower_green[0], lower_green[1], lower_green[2]
+    	   upper_color[0], upper_color[1], upper_color[2] = upper_green[0], upper_green[1], upper_green[2]
+     """
               
 if __name__ == "__main__":
     rospy.init_node("Yellow_Node", anonymous = True)
