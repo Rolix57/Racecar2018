@@ -27,6 +27,7 @@ class Follow_Wall():
         self.averageL = 0
         self.idealDis = 0.45
         self.error = 0
+        self.wall = 0
 
         self.prop = 0
         self.deriv = 0
@@ -41,6 +42,7 @@ class Follow_Wall():
         
         ranges = msg.ranges
         #Left average
+        self.wall = np.mean(ranges[300:460])
         self.futureL = np.mean(ranges[705: 740])
         self.averageL = np.mean(ranges[740 : 900])
 
@@ -70,7 +72,10 @@ class Follow_Wall():
         elif (self.futureL - self.averageL) <= 0.185:
             self.futCon = 0.1
 
-        self.output = self.prop + self.integ + self.deriv + self.futCon
+        if self.wall < 0.60:
+            self.output = -0.34
+        else:
+            self.output = self.prop + self.integ + self.deriv + self.futCon
 
         if abs(self.output) >= 0.34:
             self.velCoeff = 0.7
