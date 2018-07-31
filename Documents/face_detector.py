@@ -18,7 +18,7 @@ class FaceNode:
 
     
         self.kp = -0.35
-        self.kd = -.25
+        self.kd = -0.04
         self.ki = .0
 
         '''
@@ -97,9 +97,9 @@ class FaceNode:
 	print("cols = {}		rows = {}".format(self.cols, self.rows))
 
     def ackermann_cmd_input_callback(self, msg):
-        msg.drive.speed = 0.7
+        msg.drive.speed = 1
         msg.drive.steering_angle = self.output
-        msg.drive.steering_angle_velocity = 1.42
+        msg.drive.steering_angle_velocity = 1
         self.cmd_pub.publish(msg)
 
               
