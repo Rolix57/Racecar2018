@@ -6,11 +6,10 @@ from sensor_msgs.msg import Image
 from ackermann_msgs.msg import AckermannDriveStamped
 from cv_bridge import CvBridge
 import time
-import matplotlib.pyplot as plt
 
 class FaceNode:
     def __init__( self ):
-        rospy.Subscriber("/zed/rgb/image_rect_color",Image, self.callback, queue_size = 1)
+        rospy.Subscriber("/zed/rgb/image_rect_color",Image, self.capltllback, queue_size = 1)
         self.bridge=CvBridge()
         rospy.Subscriber("ackermann_cmd_mux/output", AckermannDriveStamped,self.ackermann_cmd_input_callback)
         
