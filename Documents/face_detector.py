@@ -58,7 +58,9 @@ class FaceNode:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
              if cx<640:
                  self.cx = 1280-(x +w/2)
-        print('Faces found: ', len(faces))
+        if len(faces) = 0:
+            self.output= 0
+	print('Faces found: ', len(faces))
         
         cv2.imshow("mask",self.gray)
         cv2.waitKey(1)
